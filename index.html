@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>कलाम (Kalam) - हिंदी उपन्यास एवं कविता स्टूडियो</title>
+  <link rel="stylesheet" href="css/style.css">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="theme-sepia">
+
+  <!-- Top Navigation Bar -->
+  <header class="kalam-navbar">
+    <div class="brand-section">
+      <div class="brand-logo">कलाम</div>
+      <div class="brand-tagline">उपन्यास एवं कविता स्टूडियो</div>
+      <button type="button" id="openLibraryBtn" class="btn-library-nav" title="सभी पुस्तकें देखें या नई पुस्तक जोड़ें">
+        <i data-lucide="library" style="width: 14px; height: 14px;"></i>
+        <span>मेरी पुस्तकें</span>
+      </button>
+    </div>
+
+    <div class="navbar-center">
+      <label class="toggle-switch-container" title="स्पेस दबाते ही अंग्रेज़ी शब्द हिंदी में बदलेंगे (Ctrl+M)">
+        <span class="toggle-switch">
+          <input type="checkbox" id="translitToggle" checked>
+          <span class="toggle-slider"></span>
+        </span>
+        <span id="translitStatusPill" class="status-pill active">हिंदी देवनागरी (Space to convert)</span>
+      </label>
+    </div>
+
+    <div class="navbar-actions">
+      <!-- One-Click Google Docs Copy -->
+      <button type="button" id="copyChapterGDocsBtn" class="btn-gdocs-copy" title="Google Docs के लिए वर्तमान अध्याय कॉपी करें">
+        <i data-lucide="clipboard-copy"></i>
+        <span>Google Docs कॉपी</span>
+      </button>
+
+      <button type="button" id="openExportModalBtn" class="btn-icon" title="अन्य प्रारूपों में निर्यात (Word, PDF, Markdown)">
+        <i data-lucide="download"></i>
+      </button>
+
+      <div class="toolbar-separator"></div>
+
+      <!-- Theme Selector -->
+      <select id="themeSelect" class="status-dropdown" title="कागज़ की थीम बदलें">
+        <option value="sepia">गरम कागज़ (Sepia)</option>
+        <option value="light">सफेद कागज़ (White)</option>
+        <option value="dark">रात का दृश्य (Dark)</option>
+      </select>
+
+      <!-- Font Selector -->
+      <select id="fontSelect" class="status-dropdown" title="फ़ॉन्ट चुनें">
+        <option value="Noto Serif Devanagari">Noto Serif (पारंपरिक)</option>
+        <option value="Noto Sans Devanagari">Noto Sans (आधुनिक)</option>
+        <option value="Rozha One">Rozha One (साहित्यिक)</option>
+      </select>
+
+      <!-- Font Size -->
+      <select id="fontSizeSelect" class="status-dropdown" title="फ़ॉन्ट आकार">
+        <option value="16px">16px</option>
+        <option value="18px" selected>18px</option>
+        <option value="20px">20px</option>
+        <option value="22px">22px</option>
+      </select>
+
+      <!-- Zen Mode -->
+      <button type="button" id="zenModeBtn" class="btn-icon" title="विघ्न-रहित लेखन (Zen Mode)">
+        <i data-lucide="maximize-2"></i>
+      </button>
+
+      <!-- Help & Shortcuts -->
+      <button type="button" id="helpBtn" class="btn-icon" title="शॉर्टकट एवं टाइपिंग निर्देश">
+        <i data-lucide="help-circle"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Workspace Layout -->
+  <main class="kalam-container">
+    <!-- Sidebar: Book Outline & Chapters -->
+    <aside class="kalam-sidebar">
+      <div class="sidebar-header">
+        <input type="text" id="bookTitleInput" class="book-title-input" placeholder="पुस्तक का नाम...">
+        <input type="text" id="bookAuthorInput" class="book-author-input" placeholder="लेखक का नाम...">
+      </div>
+
+      <div class="sidebar-stats-banner">
+        <span>कुल शब्द (पुस्तक):</span>
+        <strong id="totalBookWords">0</strong>
+      </div>
+
+      <div class="sidebar-action-bar">
+        <button type="button" id="addChapterBtn" class="btn-sidebar-add">
+          <i data-lucide="plus"></i> नया अध्याय
+        </button>
+        <button type="button" id="addPoemBtn" class="btn-sidebar-add">
+          <i data-lucide="feather"></i> नई कविता
+        </button>
+      </div>
+
+      <!-- Chapter / Poem List -->
+      <ul id="chapterList" class="chapter-nav-list">
+        <!-- Rendered dynamically by app.js -->
+      </ul>
+
+      <div class="sidebar-footer">
+        <button type="button" id="backupProjectBtn" class="btn-sidebar-add" title="संपूर्ण पुस्तक का बैकअप फ़ाइल डाउनलोड करें">
+          <i data-lucide="save"></i> बैकअप लें
+        </button>
+        <button type="button" id="importProjectBtn" class="btn-sidebar-add" title="पहले सहेजी गई बैकअप फ़ाइल खोलें">
+          <i data-lucide="folder-open"></i> बैकअप खोलें
+        </button>
+        <input type="file" id="importProjectInput" accept=".kalam,.json" style="display: none;">
+      </div>
+    </aside>
+
+    <!-- Center Writing Canvas -->
+    <section class="kalam-main-content">
+      <!-- Toolbar -->
+      <div class="kalam-toolbar">
+        <div class="toolbar-group">
+          <button type="button" id="btnBold" class="toolbar-btn" title="बोल्ड (Ctrl+B)"><strong>B</strong></button>
+          <button type="button" id="btnItalic" class="toolbar-btn" title="इटैलिक (Ctrl+I)"><em>I</em></button>
+          <button type="button" id="btnUnderline" class="toolbar-btn" title="अंडरलाइन (Ctrl+U)"><u>U</u></button>
+          <div class="toolbar-separator"></div>
+          <button type="button" id="btnH1" class="toolbar-btn" title="बड़ा शीर्षक (H1)">H1</button>
+          <button type="button" id="btnH2" class="toolbar-btn" title="उप-शीर्षक (H2)">H2</button>
+          <button type="button" id="btnBlockquote" class="toolbar-btn" title="उद्धरण (Quote)"><i data-lucide="quote"></i></button>
+          <div class="toolbar-separator"></div>
+          <button type="button" id="btnPurnaViram" class="toolbar-btn" title="पूर्ण विराम (।) डालें" style="font-size: 16px;">।</button>
+          <button type="button" id="btnSceneBreak" class="toolbar-btn" title="प्रसंग विराम (❦ ❦ ❦)"><i data-lucide="more-horizontal"></i></button>
+          <button type="button" id="btnPoetryStanza" class="toolbar-btn" title="कविता का नया छंद"><i data-lucide="align-center"></i></button>
+          <div class="toolbar-separator"></div>
+          <button type="button" id="btnUndo" class="toolbar-btn" title="पूर्ववत (Undo)"><i data-lucide="undo-2"></i></button>
+          <button type="button" id="btnRedo" class="toolbar-btn" title="पुनः (Redo)"><i data-lucide="redo-2"></i></button>
+        </div>
+
+        <!-- Mode Toggle (Novel vs Poetry) -->
+        <div class="mode-toggle-group">
+          <button type="button" id="modeNovelBtn" class="mode-toggle-btn active" title="उपन्यास मोड: पैराग्राफ़ इंडेंटेशन और संवाद शैली">
+            <i data-lucide="book-open" style="width: 13px; height: 13px; display: inline-block; vertical-align: -1px;"></i> उपन्यास
+          </button>
+          <button type="button" id="modePoetryBtn" class="mode-toggle-btn" title="कविता मोड: छंद, केंद्रित पंक्तियाँ और तुकबंदी">
+            <i data-lucide="feather" style="width: 13px; height: 13px; display: inline-block; vertical-align: -1px;"></i> कविता
+          </button>
+        </div>
+      </div>
+
+      <!-- Chapter Header -->
+      <div class="chapter-editor-header">
+        <input type="text" id="chapterTitleInput" class="chapter-title-input" placeholder="अध्याय या कविता का शीर्षक...">
+        <select id="chapterStatusSelect" class="status-dropdown">
+          <option value="draft">प्रारूप (Draft)</option>
+          <option value="in-progress">प्रगति पर (In Progress)</option>
+          <option value="completed">पूर्ण (Completed)</option>
+        </select>
+      </div>
+
+      <!-- Writing Paper Canvas -->
+      <div class="canvas-scroll-container">
+        <div class="manuscript-paper">
+          <!-- Main ContentEditable Surface -->
+          <div id="editorArea" class="editor-content mode-novel" contenteditable="true" spellcheck="false"></div>
+
+          <!-- Floating Candidate Suggestion Box -->
+          <div id="suggestionBox" class="kalam-suggestion-box"></div>
+        </div>
+      </div>
+
+      <!-- Bottom Status Bar -->
+      <footer class="kalam-statusbar">
+        <div class="statusbar-left">
+          <span>शब्द: <strong id="statWords">0</strong></span>
+          <span>हिंदी शब्द: <strong id="statHindiWords">0</strong></span>
+          <span>वर्ण: <strong id="statChars">0</strong></span>
+          <span>अनुमानित पठन: <strong id="statTime">0 मि.</strong></span>
+        </div>
+
+        <div class="statusbar-right">
+          <span>शॉर्टकट: <kbd>Space</kbd> = हिंदी | <kbd>Backspace</kbd> = Undo | <kbd>Ctrl+M</kbd> = Toggle</span>
+          <span id="saveIndicator" class="save-indicator">✓ सहेजा गया</span>
+        </div>
+      </footer>
+    </section>
+  </main>
+
+  <!-- Library / Bookshelf Modal -->
+  <div id="libraryModal" class="modal-overlay">
+    <div class="modal-card" style="max-width: 680px;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <i data-lucide="library" style="color: var(--accent-color);"></i>
+          <h3 class="modal-title">मेरी पुस्तकें (My Library)</h3>
+        </div>
+        <button type="button" id="closeLibraryModal" class="btn-icon">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- New Book Form -->
+        <div class="new-book-card" style="margin-bottom: 20px; padding: 14px; background: var(--bg-surface); border: 1px dashed var(--border-color); border-radius: var(--radius-sm);">
+          <h4 style="font-size: 13px; font-weight: 600; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
+            <i data-lucide="plus-circle" style="width: 14px; height: 14px; color: var(--accent-color);"></i> नई पुस्तक या संग्रह प्रारंभ करें
+          </h4>
+          <div style="display: grid; grid-template-columns: 2fr 1.5fr 1fr auto; gap: 8px;">
+            <input type="text" id="newBookTitleInput" class="status-dropdown" style="background: var(--bg-canvas);" placeholder="पुस्तक का नाम...">
+            <input type="text" id="newBookAuthorInput" class="status-dropdown" style="background: var(--bg-canvas);" placeholder="लेखक का नाम...">
+            <select id="newBookGenreSelect" class="status-dropdown" style="background: var(--bg-canvas);">
+              <option value="novel">उपन्यास (Novel)</option>
+              <option value="poetry">कविता संग्रह (Poetry)</option>
+            </select>
+            <button type="button" id="createNewBookBtn" class="btn-gdocs-copy" style="background: var(--accent-color); padding: 4px 12px; font-size: 12px;">
+              बनाएँ
+            </button>
+          </div>
+        </div>
+
+        <!-- Book List Grid -->
+        <h4 style="font-size: 12px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px;">
+          पुस्तकालय में उपलब्ध रचनाएँ
+        </h4>
+        <div id="libraryBooksGrid" class="library-books-grid" style="max-height: 340px; overflow-y: auto;">
+          <!-- Dynamically populated by app.js -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Export Modal -->
+  <div id="exportModal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">पांडुलिपि निर्यात (Export Manuscript)</h3>
+        <button type="button" id="closeExportModal" class="btn-icon">✕</button>
+      </div>
+      <div class="modal-body">
+        <!-- Google Docs Full Book -->
+        <div class="export-option-row">
+          <div class="export-option-info">
+            <h4>Google Docs (सम्पूर्ण पुस्तक)</h4>
+            <p>सभी अध्यायों को Google Docs में सीधे पेस्ट करने के लिए कॉपी करें।</p>
+          </div>
+          <button type="button" id="copyFullBookGDocsBtn" class="btn-gdocs-copy">
+            <i data-lucide="clipboard-copy"></i> कॉपी करें
+          </button>
+        </div>
+
+        <!-- Microsoft Word DOCX -->
+        <div class="export-option-row">
+          <div class="export-option-info">
+            <h4>Microsoft Word (.doc / .docx)</h4>
+            <p>KDP, Notion Press और Pothi प्रकाशन हेतु मानक मार्जिन और 1.5 लाइन स्पेसिंग।</p>
+          </div>
+          <div style="display: flex; gap: 6px;">
+            <button type="button" id="exportDocxBtn" class="btn-sidebar-add">यह अध्याय</button>
+            <button type="button" id="exportFullDocxBtn" class="btn-sidebar-add" style="background-color: var(--accent-light); color: var(--accent-color);">पूरी पुस्तक</button>
+          </div>
+        </div>
+
+        <!-- Print / PDF -->
+        <div class="export-option-row">
+          <div class="export-option-info">
+            <h4>प्रिंट / PDF तैयार करें</h4>
+            <p>A5 या 6x9 इंच पुस्तक साइज़ में सीधे PDF सुरक्षित करें।</p>
+          </div>
+          <button type="button" id="printManuscriptBtn" class="btn-sidebar-add">
+            <i data-lucide="printer"></i> प्रिंट / PDF
+          </button>
+        </div>
+
+        <!-- Markdown & Text -->
+        <div class="export-option-row">
+          <div class="export-option-info">
+            <h4>Plain Text & Markdown</h4>
+            <p>शुद्ध UTF-8 देवनागरी टेक्स्ट या मार्कडाउन प्रारूप में सुरक्षित करें।</p>
+          </div>
+          <div style="display: flex; gap: 6px;">
+            <button type="button" id="exportMarkdownBtn" class="btn-sidebar-add">.md</button>
+            <button type="button" id="exportPlainTextBtn" class="btn-sidebar-add">.txt</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Help & Shortcuts Modal -->
+  <div id="shortcutsModal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">टाइपिंग निर्देश एवं शॉर्टकट (Typing Guide)</h3>
+        <button type="button" id="closeShortcutsModal" class="btn-icon">✕</button>
+      </div>
+      <div class="modal-body" style="font-size: 13px; line-height: 1.6;">
+        <h4 style="margin-bottom: 8px; color: var(--accent-color);">१. स्पेसबार रूपांतरण (Spacebar Transliteration)</h4>
+        <p style="margin-bottom: 12px;">
+          बस अंग्रेज़ी (Hinglish) में टाइप करें और <kbd>Space</kbd> दबाएँ। शब्द तुरंत हिंदी में बदल जाएगा।<br>
+          उदाहरण: <code>namaste</code> &rarr; <strong>नमस्ते</strong>, <code>kya baat hai</code> &rarr; <strong>क्या बात है</strong>, <code>zindagi</code> &rarr; <strong>ज़िंदगी</strong>
+        </p>
+
+        <h4 style="margin-bottom: 8px; color: var(--accent-color);">२. अंग्रेज़ी शब्द बनाए रखना (Undo on Backspace)</h4>
+        <p style="margin-bottom: 12px;">
+          यदि आप कोई अंग्रेज़ी शब्द (जैसे <code>iPhone</code> या <code>Dr.</code>) लिखना चाहते हैं, तो स्पेस दबाने के तुरंत बाद <kbd>Backspace</kbd> दबाएँ। शब्द वापस अंग्रेज़ी में आ जाएगा!
+        </p>
+
+        <h4 style="margin-bottom: 8px; color: var(--accent-color);">३. विकल्प चुनना (Word Suggestions)</h4>
+        <p style="margin-bottom: 12px;">
+          शब्द बदलने पर नीचे候補 विकल्प दिखेंगे। संख्या कुंजियाँ <kbd>1</kbd> से <kbd>5</kbd> दबाकर या माउस से क्लिक करके सही शब्द चुन सकते हैं।
+        </p>
+
+        <h4 style="margin-bottom: 8px; color: var(--accent-color);">४. पूर्ण विराम (।) एवं दीर्घ विराम (॥)</h4>
+        <p style="margin-bottom: 12px;">
+          वाक्य पूरा होने पर बस <kbd>.</kbd> (फुल स्टॉप) दबाएँ। यह स्वतः <strong>पूर्ण विराम (।)</strong> में बदल जाएगा।<br>
+          दो बार <kbd>..</kbd> दबाने पर यह कविता/दोहे हेतु <strong>दीर्घ विराम (॥)</strong> बन जाता है। दशमलव संख्या (जैसे <code>3.14</code>) पर यह सामान्य बिंदु (.) ही रहता है।
+        </p>
+
+        <h4 style="margin-bottom: 8px; color: var(--accent-color);">५. मुख्य शॉर्टकट</h4>
+        <ul style="padding-left: 20px; margin-bottom: 12px;">
+          <li><kbd>Ctrl + M</kbd> : हिंदी / अंग्रेज़ी टाइपिंग चालू या बंद करें।</li>
+          <li><kbd>Ctrl + B</kbd> / <kbd>Ctrl + I</kbd> : बोल्ड एवं इटैलिक।</li>
+          <li><kbd>Shift + Enter</kbd> : कविता में बिना अंतराल की अगली पंक्ति।</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Animated Toast Notification -->
+  <div id="toast" class="kalam-toast">
+    <i data-lucide="check-circle" style="width: 16px; height: 16px;"></i>
+    <span id="toastMessage">संदेश</span>
+  </div>
+
+  <!-- Application Scripts (Modular, zero build-step, works offline & on file://) -->
+  <script src="js/phonetic-map.js"></script>
+  <script src="js/transliterator.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/exporter.js"></script>
+  <script src="js/editor.js"></script>
+  <script src="js/app.js"></script>
+
+  <script>
+    // Initialize Lucide Icons on start
+    window.addEventListener('load', () => {
+      if (window.lucide) {
+        window.lucide.createIcons();
+      }
+    });
+  </script>
+</body>
+</html>
+
