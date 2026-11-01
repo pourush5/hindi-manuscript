@@ -966,6 +966,40 @@ body.zen-mode .manuscript-paper {
   padding: 40px 20px;
 }
 
+/* Floating Zen Exit Button */
+.zen-exit-pill {
+  position: fixed;
+  top: 18px;
+  right: 24px;
+  background-color: var(--bg-surface);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  display: none;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  z-index: 1000;
+  box-shadow: var(--shadow-md);
+  opacity: 0.4;
+  transition: all 0.2s ease;
+}
+
+body.zen-mode .zen-exit-pill {
+  display: inline-flex !important;
+}
+
+.zen-exit-pill:hover {
+  opacity: 1;
+  background-color: var(--bg-canvas);
+  color: var(--accent-color);
+  border-color: var(--accent-color);
+  transform: translateY(-1px);
+}
+
 /* Print Styles for Book Formatting */
 @media print {
   body {

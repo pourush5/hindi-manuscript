@@ -150,14 +150,42 @@
       showToast(enabled ? 'देवनागरी टाइपिंग सक्रिय (ON)' : 'अंग्रेज़ी टाइपिंग सक्रिय (OFF)');
     });
 
-    // Global Keyboard Shortcut: Ctrl+M to toggle Hindi transliteration
+    // Global Keyboard Shortcuts: Ctrl+M to toggle Hindi transliteration & Esc to exit Zen Mode / close Modals
     window.addEventListener('keydown', (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'm') {
         e.preventDefault();
         elements.translitToggle.checked = !elements.translitToggle.checked;
         elements.translitToggle.dispatchEvent(new Event('change'));
+        return;
+      }
+
+      if (e.key === 'Escape') {
+        // 1. If candidate suggestion box is active, let it close first
+        const suggestionBox = document.getElementById('suggestionBox');
+        if (suggestionBox && suggestionBox.style.display !== 'none' && suggestionBox.children.length > 0) {
+          return;
+        }
+
+        // 2. If any modal is open, close it
+        const openModalElem = document.querySelector('.modal-overlay.open');
+        if (openModalElem) {
+          openModalElem.classList.remove('open');
+          return;
+        }
+
+        // 3. If in Zen Mode, exit Zen Mode!
+        if (document.body.classList.contains('zen-mode')) {
+          e.preventDefault();
+          toggleZenMode();
+          return;
+        }
       }
     });
+
+    const exitZenBtn = document.getElementById('exitZenBtn');
+    if (exitZenBtn) {
+      exitZenBtn.addEventListener('click', toggleZenMode);
+    }
 
     // Formatting Toolbar Buttons
     bindToolbarButtons();
