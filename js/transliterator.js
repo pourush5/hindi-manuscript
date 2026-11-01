@@ -199,9 +199,22 @@ window.KalamTransliterator = (function () {
     return word;
   }
 
+  /**
+   * Synchronously returns cached candidate list if available
+   */
+  function getCachedCandidates(word) {
+    if (!word) return null;
+    const clean = word.trim().toLowerCase();
+    if (memoryCache.has(clean)) {
+      return memoryCache.get(clean);
+    }
+    return null;
+  }
+
   return {
     getCandidates: getCandidates,
     getInstantTopCandidate: getInstantTopCandidate,
+    getCachedCandidates: getCachedCandidates,
     hasCache: hasCache,
     prefetch: prefetch,
     clearCache: () => memoryCache.clear()
