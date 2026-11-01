@@ -87,9 +87,65 @@
         <input type="text" id="bookAuthorInput" class="book-author-input" placeholder="लेखक का नाम...">
       </div>
 
-      <div class="sidebar-stats-banner">
-        <span>कुल शब्द (पुस्तक):</span>
-        <strong id="totalBookWords">0</strong>
+      <!-- Targets & Publishing Standards Section -->
+      <div class="sidebar-targets-section">
+        <div class="targets-header">
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <i data-lucide="target" style="width: 14px; height: 14px; color: var(--accent-color);"></i>
+            <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">लेखन लक्ष्य एवं मानक</span>
+          </div>
+          <button type="button" id="openNormsGuideBtn" class="btn-info-icon" title="उपन्यास एवं कविता प्रकाशन मानक गाइड देखें">
+            <i data-lucide="help-circle" style="width: 13px; height: 13px;"></i>
+          </button>
+        </div>
+
+        <!-- Preset Selector -->
+        <select id="targetPresetSelect" class="status-dropdown" style="width: 100%; font-size: 11px; margin-bottom: 8px;">
+          <option value="standard-novel">📖 मानक उपन्यास: 60k शब्द (~2.5k/अध्याय)</option>
+          <option value="novella">📜 लघु उपन्यास: 30k शब्द (~1.8k/अध्याय)</option>
+          <option value="epic-novel">🏛️ महाकाव्य उपन्यास: 90k शब्द (~3.5k/अध्याय)</option>
+          <option value="story-collection">📚 कहानी संग्रह: 35k शब्द (~3k/कहानी)</option>
+          <option value="poetry-collection">🪶 काव्य संग्रह: 50 कविताएँ (~8k शब्द)</option>
+          <option value="chapbook">📑 लघु काव्य पुस्तिका: 25 कविताएँ (~3.5k शब्द)</option>
+          <option value="custom">⚙️ कस्टम लक्ष्य (Custom Target)</option>
+        </select>
+
+        <!-- Custom Inputs (Shown only when 'custom' selected) -->
+        <div id="customTargetInputs" style="display: none; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 8px;">
+          <div>
+            <label style="font-size: 10px; color: var(--text-secondary); display: block; margin-bottom: 2px;">पुस्तक कुल शब्द</label>
+            <input type="number" id="customBookTarget" class="status-dropdown" style="width: 100%; padding: 2px 6px; font-size: 11px;" value="60000" step="1000">
+          </div>
+          <div>
+            <label style="font-size: 10px; color: var(--text-secondary); display: block; margin-bottom: 2px;">प्रति अध्याय शब्द</label>
+            <input type="number" id="customChapterTarget" class="status-dropdown" style="width: 100%; padding: 2px 6px; font-size: 11px;" value="2500" step="500">
+          </div>
+        </div>
+
+        <!-- Overall Book Progress -->
+        <div class="progress-item">
+          <div class="progress-labels">
+            <span>सम्पूर्ण पुस्तक:</span>
+            <span id="targetBookProgressText">0 / 60,000 शब्द (0%)</span>
+          </div>
+          <div class="progress-bar-bg">
+            <div id="targetBookProgressBar" class="progress-bar-fill" style="width: 0%;"></div>
+          </div>
+          <div class="progress-sub-info">
+            <span>कुल शब्द: <strong id="totalBookWords">0</strong> • <strong id="targetEstimatedPages">~0 पृष्ठ (6x9")</strong></span>
+          </div>
+        </div>
+
+        <!-- Active Chapter Progress -->
+        <div class="progress-item" style="margin-top: 6px;">
+          <div class="progress-labels">
+            <span>वर्तमान रचना:</span>
+            <span id="targetChapterProgressText">0 / 2,500 शब्द (0%)</span>
+          </div>
+          <div class="progress-bar-bg">
+            <div id="targetChapterProgressBar" class="progress-bar-fill chapter-bar" style="width: 0%;"></div>
+          </div>
+        </div>
       </div>
 
       <div class="sidebar-action-bar">
@@ -321,6 +377,81 @@
           <li><kbd>Ctrl + B</kbd> / <kbd>Ctrl + I</kbd> : बोल्ड एवं इटैलिक।</li>
           <li><kbd>Shift + Enter</kbd> : कविता में बिना अंतराल की अगली पंक्ति।</li>
         </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Publishing Norms Reference Guide Modal -->
+  <div id="normsGuideModal" class="modal-overlay">
+    <div class="modal-card" style="max-width: 720px; max-height: 85vh; overflow-y: auto;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <i data-lucide="book-marked" style="color: var(--accent-color);"></i>
+          <h3 class="modal-title">पुस्तक प्रकाशन मानक एवं शब्द सीमा (Publishing Norms Guide)</h3>
+        </div>
+        <button type="button" id="closeNormsGuideModal" class="btn-icon">✕</button>
+      </div>
+
+      <div class="modal-body" style="font-size: 13px; line-height: 1.6;">
+        <p style="margin-bottom: 14px; color: var(--text-secondary);">
+          पुस्तक प्रकाशन उद्योग (Amazon KDP, Notion Press, Pothi, राजकमल, वाणी प्रकाशन आदि) में विभिन्न विधाओं हेतु स्वीकृत मानक शब्द सीमा एवं अध्याय विभाजन के सामान्य नियम:
+        </p>
+
+        <!-- Norms Grid -->
+        <div class="norms-grid">
+          <!-- Novel Norms -->
+          <div class="norm-card">
+            <h5><i data-lucide="book-open" style="width: 14px; height: 14px;"></i> उपन्यास के मानक (Novel Norms)</h5>
+            <ul>
+              <li><span>मानक उपन्यास (Commercial/Literary):</span> <span>50,000 – 80,000 शब्द</span></li>
+              <li><span>लघु उपन्यास (Novella):</span> <span>20,000 – 40,000 शब्द</span></li>
+              <li><span>महाकाव्य / थ्रिलर (Epic/Fantasy):</span> <span>80,000 – 1,10,000+ शब्द</span></li>
+              <li><span>औसत अध्याय लंबाई:</span> <span>2,000 – 3,500 शब्द</span></li>
+              <li><span>अध्यायों की सामान्य संख्या:</span> <span>15 – 28 अध्याय</span></li>
+            </ul>
+          </div>
+
+          <!-- Poetry Norms -->
+          <div class="norm-card">
+            <h5><i data-lucide="feather" style="width: 14px; height: 14px;"></i> काव्य संग्रह के मानक (Poetry Norms)</h5>
+            <ul>
+              <li><span>मानक काव्य संग्रह:</span> <span>50 – 80 रचनाएँ (~8k शब्द)</span></li>
+              <li><span>लघु काव्य पुस्तिका (Chapbook):</span> <span>20 – 35 कविताएँ (~3.5k शब्द)</span></li>
+              <li><span>ग़ज़ल / शायरी संग्रह:</span> <span>45 – 70 ग़ज़लें</span></li>
+              <li><span>प्रति कविता औसत:</span> <span>80 – 250 शब्द (16–32 पंक्तियाँ)</span></li>
+              <li><span>पुस्तक कुल पृष्ठ:</span> <span>80 – 130 पृष्ठ</span></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="norms-grid">
+          <!-- Short Stories -->
+          <div class="norm-card">
+            <h5><i data-lucide="layers" style="width: 14px; height: 14px;"></i> कहानी संग्रह (Short Stories)</h5>
+            <ul>
+              <li><span>सम्पूर्ण संग्रह शब्द:</span> <span>30,000 – 50,000 शब्द</span></li>
+              <li><span>कहानियों की संख्या:</span> <span>10 – 16 कहानियाँ</span></li>
+              <li><span>प्रति कहानी लंबाई:</span> <span>2,500 – 4,500 शब्द</span></li>
+            </ul>
+          </div>
+
+          <!-- Self Publishing Print Rules -->
+          <div class="norm-card">
+            <h5><i data-lucide="printer" style="width: 14px; height: 14px;"></i> मुद्रण एवं रीढ़ (Spine Rules)</h5>
+            <ul>
+              <li><span>KDP न्यूनतम पृष्ठ (रीढ़ पाठ):</span> <span>कम से कम 79 पृष्ठ (~20k शब्द)</span></li>
+              <li><span>Pothi / Notion Press रीढ़:</span> <span>कम से कम 80–100 पृष्ठ</span></li>
+              <li><span>1 मानक पृष्ठ (6x9" या A5):</span> <span>~250 शब्द (1.5 पंक्ति अंतराल)</span></li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Formula Box -->
+        <div class="norms-formula-box">
+          <strong style="color: var(--accent-color);">💡 पृष्ठ गणना सूत्र (Page Estimation Formula):</strong><br>
+          मानक 6x9 इंच या A5 पेपरबैक पुस्तक में 11pt देवनागरी फ़ॉन्ट एवं 1.5 लाइन स्पेसिंग के साथ लगभग <strong>250 शब्द प्रति पृष्ठ</strong> आते हैं।<br>
+          <em>उदाहरण:</em> 60,000 शब्दों का उपन्यास $\approx$ 240 मुद्रित पृष्ठ + 10 पृष्ठ आरंभिक सामग्री (Front Matter) $\approx$ <strong>250 कुल पृष्ठ</strong>।
+        </div>
       </div>
     </div>
   </div>

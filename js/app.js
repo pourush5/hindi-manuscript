@@ -44,6 +44,20 @@
     // Modals
     shortcutsModal: document.getElementById('shortcutsModal'),
     exportModal: document.getElementById('exportModal'),
+    normsGuideModal: document.getElementById('normsGuideModal'),
+    closeNormsGuideModal: document.getElementById('closeNormsGuideModal'),
+    openNormsGuideBtn: document.getElementById('openNormsGuideBtn'),
+
+    // Targets & Norms
+    targetPresetSelect: document.getElementById('targetPresetSelect'),
+    customTargetInputs: document.getElementById('customTargetInputs'),
+    customBookTarget: document.getElementById('customBookTarget'),
+    customChapterTarget: document.getElementById('customChapterTarget'),
+    targetBookProgressText: document.getElementById('targetBookProgressText'),
+    targetBookProgressBar: document.getElementById('targetBookProgressBar'),
+    targetEstimatedPages: document.getElementById('targetEstimatedPages'),
+    targetChapterProgressText: document.getElementById('targetChapterProgressText'),
+    targetChapterProgressBar: document.getElementById('targetChapterProgressBar'),
 
     // Library / Bookshelf
     libraryModal: document.getElementById('libraryModal'),
@@ -226,6 +240,59 @@
     // Help & Shortcuts Modal
     document.getElementById('helpBtn').addEventListener('click', () => openModal(elements.shortcutsModal));
     document.getElementById('closeShortcutsModal').addEventListener('click', () => closeModal(elements.shortcutsModal));
+
+    // Targets & Norms Events
+    if (elements.targetPresetSelect) {
+      elements.targetPresetSelect.addEventListener('change', (e) => {
+        const preset = e.target.value;
+        const targets = getTargetSettings();
+        targets.preset = preset;
+        if (preset === 'custom') {
+          if (elements.customTargetInputs) elements.customTargetInputs.style.display = 'grid';
+        } else {
+          if (elements.customTargetInputs) elements.customTargetInputs.style.display = 'none';
+          if (STANDARDS_PRESETS[preset]) {
+            targets.totalWords = STANDARDS_PRESETS[preset].totalWords;
+            targets.chapterWords = STANDARDS_PRESETS[preset].chapterWords;
+            if (elements.customBookTarget) elements.customBookTarget.value = targets.totalWords;
+            if (elements.customChapterTarget) elements.customChapterTarget.value = targets.chapterWords;
+          }
+        }
+        updateLiveStats();
+        scheduleAutoSave();
+      });
+    }
+
+    if (elements.customBookTarget) {
+      elements.customBookTarget.addEventListener('input', (e) => {
+        const val = parseInt(e.target.value, 10);
+        if (!isNaN(val) && val > 0) {
+          const targets = getTargetSettings();
+          targets.totalWords = val;
+          updateLiveStats();
+          scheduleAutoSave();
+        }
+      });
+    }
+
+    if (elements.customChapterTarget) {
+      elements.customChapterTarget.addEventListener('input', (e) => {
+        const val = parseInt(e.target.value, 10);
+        if (!isNaN(val) && val > 0) {
+          const targets = getTargetSettings();
+          targets.chapterWords = val;
+          updateLiveStats();
+          scheduleAutoSave();
+        }
+      });
+    }
+
+    if (elements.openNormsGuideBtn) {
+      elements.openNormsGuideBtn.addEventListener('click', () => openModal(elements.normsGuideModal));
+    }
+    if (elements.closeNormsGuideModal) {
+      elements.closeNormsGuideModal.addEventListener('click', () => closeModal(elements.normsGuideModal));
+    }
 
     // Library Modal & New Book Creation
     if (elements.openLibraryBtn) {
@@ -478,6 +545,128 @@
       window.KalamEditor.setTransliterationEnabled(settings.transliterationEnabled);
       updateTranslitStatusPill(settings.transliterationEnabled);
     }
+    applyTargets(settings.targets);
+  }
+
+  // --- Literary Standards & Word Count Norms Presets ---
+  const STANDARDS_PRESETS = {
+    'standard-novel': {
+      title: 'मानक उपन्यास',
+      totalWords: 60000,
+      chapterWords: 2500,
+      desc: 'मानक साहित्यिक/व्यावसायिक उपन्यास (50,000–80,000 शब्द)'
+    },
+    'novella': {
+      title: 'लघु उपन्यास',
+      totalWords: 30000,
+      chapterWords: 1800,
+      desc: 'लघु उपन्यास (20,000–40,000 शब्द)'
+    },
+    'epic-novel': {
+      title: 'महाकाव्य उपन्यास',
+      totalWords: 90000,
+      chapterWords: 3500,
+      desc: 'ऐतिहासिक या महाकाव्यात्मक उपन्यास (80,000–1,10,000+ शब्द)'
+    },
+    'story-collection': {
+      title: 'कहानी संग्रह',
+      totalWords: 35000,
+      chapterWords: 3000,
+      desc: 'कहानी संग्रह (30,000–50,000 शब्द)'
+    },
+    'poetry-collection': {
+      title: 'मानक काव्य संग्रह',
+      totalWords: 8000,
+      chapterWords: 160,
+      desc: '50–80 कविताएँ / ग़ज़लें (~8,000 शब्द)'
+    },
+    'chapbook': {
+      title: 'लघु काव्य पुस्तिका',
+      totalWords: 3500,
+      chapterWords: 140,
+      desc: '20–35 कविताओं की पुस्तिका (~3,500 शब्द)'
+    },
+    'custom': {
+      title: 'कस्टम लक्ष्य',
+      totalWords: 60000,
+      chapterWords: 2500,
+      desc: 'लेखक द्वारा निर्धारित व्यक्तिगत लक्ष्य'
+    }
+  };
+
+  function getTargetSettings() {
+    if (!project) return { preset: 'standard-novel', totalWords: 60000, chapterWords: 2500 };
+    project.settings = project.settings || {};
+    if (!project.settings.targets) {
+      const defaultPreset = project.genre === 'poetry' ? 'poetry-collection' : 'standard-novel';
+      project.settings.targets = {
+        preset: defaultPreset,
+        totalWords: STANDARDS_PRESETS[defaultPreset].totalWords,
+        chapterWords: STANDARDS_PRESETS[defaultPreset].chapterWords
+      };
+    }
+    return project.settings.targets;
+  }
+
+  function applyTargets(savedTargets) {
+    const targets = getTargetSettings();
+    if (savedTargets) {
+      if (savedTargets.preset) targets.preset = savedTargets.preset;
+      if (savedTargets.totalWords) targets.totalWords = savedTargets.totalWords;
+      if (savedTargets.chapterWords) targets.chapterWords = savedTargets.chapterWords;
+    }
+
+    if (elements.targetPresetSelect) {
+      elements.targetPresetSelect.value = targets.preset || 'standard-novel';
+    }
+    if (elements.customTargetInputs) {
+      elements.customTargetInputs.style.display = targets.preset === 'custom' ? 'grid' : 'none';
+    }
+    if (elements.customBookTarget) {
+      elements.customBookTarget.value = targets.totalWords;
+    }
+    if (elements.customChapterTarget) {
+      elements.customChapterTarget.value = targets.chapterWords;
+    }
+  }
+
+  function updateTargetMetrics(totalWords, chapterWords) {
+    const targets = getTargetSettings();
+    const presetKey = targets.preset || 'standard-novel';
+
+    let targetTotal = targets.totalWords || 60000;
+    let targetChapter = targets.chapterWords || 2500;
+
+    if (presetKey !== 'custom' && STANDARDS_PRESETS[presetKey]) {
+      targetTotal = STANDARDS_PRESETS[presetKey].totalWords;
+      targetChapter = STANDARDS_PRESETS[presetKey].chapterWords;
+    }
+
+    // Overall Book Progress
+    const bookPercent = Math.min(100, Math.round((totalWords / targetTotal) * 100)) || 0;
+    if (elements.targetBookProgressText) {
+      elements.targetBookProgressText.textContent = `${totalWords.toLocaleString('hi-IN')} / ${targetTotal.toLocaleString('hi-IN')} शब्द (${bookPercent}%)`;
+    }
+    if (elements.targetBookProgressBar) {
+      elements.targetBookProgressBar.style.width = `${bookPercent}%`;
+      elements.targetBookProgressBar.style.backgroundColor = bookPercent >= 100 ? '#16a34a' : 'var(--accent-color)';
+    }
+
+    // Estimated Paperback Pages (250 words per page in 6x9 or A5 format)
+    const estPages = Math.ceil(totalWords / 250);
+    if (elements.targetEstimatedPages) {
+      elements.targetEstimatedPages.textContent = `~${estPages} मुद्रित पृष्ठ (A5/6x9")`;
+    }
+
+    // Active Chapter / Poem Progress
+    const chPercent = Math.min(100, Math.round((chapterWords / targetChapter) * 100)) || 0;
+    if (elements.targetChapterProgressText) {
+      elements.targetChapterProgressText.textContent = `${chapterWords.toLocaleString('hi-IN')} / ${targetChapter.toLocaleString('hi-IN')} शब्द (${chPercent}%)`;
+    }
+    if (elements.targetChapterProgressBar) {
+      elements.targetChapterProgressBar.style.width = `${chPercent}%`;
+      elements.targetChapterProgressBar.style.backgroundColor = chPercent >= 100 ? '#16a34a' : '#2563eb';
+    }
   }
 
   function applyTheme(theme) {
@@ -537,7 +726,10 @@
       const words = text.trim().split(/\s+/).filter(w => w.length > 0);
       total += words.length;
     });
-    elements.totalBookWords.textContent = total;
+    if (elements.totalBookWords) {
+      elements.totalBookWords.textContent = total;
+    }
+    updateTargetMetrics(total, stats.words);
   }
 
   // Auto-Save Mechanism
