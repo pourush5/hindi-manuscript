@@ -1,0 +1,15 @@
+# Operating System Files
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Editor & IDE caches
+.vscode/
+.idea/
+*.swp
+*.bak
+
+# Temporary / Scratch files
+scratch/
+test_*.py
+*.log
