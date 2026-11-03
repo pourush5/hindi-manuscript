@@ -345,7 +345,96 @@ input:checked+.toggle-slider:before {
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
-  transition: width 0.2s ease;
+  transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1), transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  z-index: 30;
+}
+
+.kalam-sidebar.collapsed {
+  width: 0 !important;
+  min-width: 0 !important;
+  border-right: none !important;
+  overflow: hidden !important;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* Sidebar collapse button in header */
+.btn-sidebar-collapse {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px;
+  border-radius: var(--radius-sm);
+  transition: all 0.15s ease;
+}
+
+.btn-sidebar-collapse:hover {
+  color: var(--accent-color);
+  background-color: var(--bg-canvas);
+}
+
+/* Floating Sidebar Opener */
+.floating-sidebar-opener {
+  position: absolute;
+  left: 14px;
+  top: 56px;
+  background-color: var(--bg-canvas);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  padding: 5px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  display: none;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  z-index: 25;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+  opacity: 0.85;
+}
+
+.floating-sidebar-opener:hover {
+  opacity: 1;
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+  transform: translateX(2px);
+  box-shadow: var(--shadow-md);
+}
+
+body.sidebar-is-collapsed .floating-sidebar-opener {
+  display: inline-flex !important;
+}
+
+body.zen-mode .floating-sidebar-opener {
+  display: none !important;
+}
+
+/* Sidebar Backdrop on Mobile / Windowed screen */
+.sidebar-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(1.5px);
+  z-index: 45;
+  display: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  cursor: pointer;
+}
+
+.sidebar-backdrop.active {
+  display: block;
+  opacity: 1;
 }
 
 .sidebar-header {
@@ -675,6 +764,7 @@ input:checked+.toggle-slider:before {
   flex-direction: column;
   overflow: hidden;
   background-color: var(--bg-primary);
+  position: relative;
 }
 
 /* Editor Toolbar */
@@ -1125,6 +1215,196 @@ body.zen-mode .zen-exit-pill {
   color: var(--accent-color);
   border-color: var(--accent-color);
   transform: translateY(-1px);
+}
+
+/* ==========================================================================
+   Responsive & Windowed Mode (Restored down / Snapped / Small screens)
+   ========================================================================== */
+
+@media (max-width: 950px) {
+  /* Overlay Drawer Sidebar on narrow screens */
+  .kalam-sidebar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    height: 100%;
+    width: 320px;
+    max-width: 86vw;
+    z-index: 50;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.28);
+    transform: translateX(0);
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.25s;
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  .kalam-sidebar.collapsed {
+    transform: translateX(-100%) !important;
+    width: 320px !important;
+    min-width: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+
+  /* Canvas and Paper responsiveness */
+  .canvas-scroll-container {
+    padding: 16px 12px;
+  }
+
+  .manuscript-paper {
+    padding: 36px 32px;
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-sm);
+    min-height: calc(100vh - 160px);
+  }
+
+  .chapter-editor-header {
+    padding: 12px 16px 0 16px;
+  }
+
+  .chapter-title-input {
+    font-size: 20px;
+  }
+
+  /* Compact Navbar */
+  .kalam-navbar {
+    padding: 0 12px;
+  }
+
+  .brand-tagline {
+    display: none;
+  }
+
+  .navbar-actions {
+    gap: 6px;
+  }
+
+  .btn-gdocs-copy {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
+  /* Horizontally Scrollable Toolbar */
+  .kalam-toolbar {
+    padding: 0 10px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .kalam-toolbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .toolbar-group {
+    flex-shrink: 0;
+  }
+}
+
+@media (max-width: 720px) {
+  .kalam-navbar {
+    padding: 0 8px;
+    height: 52px;
+  }
+
+  .kalam-container {
+    height: calc(100vh - 52px - 28px);
+  }
+
+  .brand-logo {
+    font-size: 19px;
+  }
+
+  .btn-library-nav span {
+    display: none;
+  }
+
+  .btn-gdocs-copy span {
+    display: none;
+  }
+
+  .btn-gdocs-copy {
+    padding: 6px 8px;
+  }
+
+  .status-pill {
+    display: none;
+  }
+
+  .navbar-actions {
+    gap: 4px;
+  }
+
+  /* Compact Chapter Heading */
+  .chapter-editor-header {
+    padding: 8px 10px 0 10px;
+    gap: 8px;
+  }
+
+  .chapter-title-input {
+    font-size: 18px;
+  }
+
+  /* Clean Paper Canvas in Small Windowed View */
+  .canvas-scroll-container {
+    padding: 8px 6px;
+  }
+
+  .manuscript-paper {
+    padding: 22px 18px;
+    border: 1px solid var(--border-color);
+    box-shadow: none;
+    border-radius: 4px;
+    min-height: calc(100vh - 130px);
+  }
+
+  .editor-content {
+    font-size: 17px;
+    line-height: 1.75;
+  }
+
+  /* Floating Opener in Mobile / Small Window */
+  .floating-sidebar-opener {
+    left: 8px;
+    top: 54px;
+    padding: 4px 10px;
+  }
+
+  /* Compact Status Bar */
+  .kalam-statusbar {
+    height: 28px;
+    padding: 0 10px;
+    font-size: 10px;
+  }
+
+  .statusbar-left {
+    gap: 8px;
+  }
+
+  .stat-reading-time,
+  .statusbar-shortcuts-hint {
+    display: none;
+  }
+}
+
+@media (max-width: 520px) {
+  .floating-sidebar-opener .opener-label {
+    display: none;
+  }
+
+  .floating-sidebar-opener {
+    padding: 6px;
+    border-radius: 50%;
+  }
+
+  .manuscript-paper {
+    padding: 16px 12px;
+    border: none;
+    background-color: transparent;
+  }
 }
 
 /* Print Styles for Book Formatting */

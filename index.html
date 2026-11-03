@@ -13,6 +13,9 @@
   <!-- Top Navigation Bar -->
   <header class="kalam-navbar">
     <div class="brand-section">
+      <button type="button" id="toggleSidebarBtn" class="btn-icon" title="साइडबार समेटें/खोलें (Ctrl+\)">
+        <i data-lucide="panel-left"></i>
+      </button>
       <div class="brand-logo">कलाम</div>
       <div class="brand-tagline">उपन्यास एवं कविता स्टूडियो</div>
       <button type="button" id="openLibraryBtn" class="btn-library-nav" title="सभी पुस्तकें देखें या नई पुस्तक जोड़ें">
@@ -83,6 +86,12 @@
     <!-- Sidebar: Book Outline & Chapters -->
     <aside class="kalam-sidebar">
       <div class="sidebar-header">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px;">पुस्तक रूपरेखा</span>
+          <button type="button" id="closeSidebarBtn" class="btn-sidebar-collapse" title="साइडबार समेटें (Ctrl+\)">
+            <i data-lucide="panel-left-close" style="width: 14px; height: 14px;"></i>
+          </button>
+        </div>
         <input type="text" id="bookTitleInput" class="book-title-input" placeholder="पुस्तक का नाम...">
         <input type="text" id="bookAuthorInput" class="book-author-input" placeholder="लेखक का नाम...">
       </div>
@@ -173,8 +182,17 @@
       </div>
     </aside>
 
+    <!-- Sidebar Backdrop for narrow/windowed screens -->
+    <div id="sidebarBackdrop" class="sidebar-backdrop"></div>
+
     <!-- Center Writing Canvas -->
     <section class="kalam-main-content">
+      <!-- Floating Sidebar Opener (Shown when sidebar is collapsed) -->
+      <button type="button" id="floatingSidebarOpener" class="floating-sidebar-opener" title="अध्याय सूची खोलें (Ctrl+\)">
+        <i data-lucide="panel-left-open" style="width: 15px; height: 15px;"></i>
+        <span class="opener-label">अध्याय सूची</span>
+      </button>
+
       <!-- Toolbar -->
       <div class="kalam-toolbar">
         <div class="toolbar-group">
@@ -232,11 +250,11 @@
           <span>शब्द: <strong id="statWords">0</strong></span>
           <span>हिंदी शब्द: <strong id="statHindiWords">0</strong></span>
           <span>वर्ण: <strong id="statChars">0</strong></span>
-          <span>अनुमानित पठन: <strong id="statTime">0 मि.</strong></span>
+          <span class="stat-reading-time">अनुमानित पठन: <strong id="statTime">0 मि.</strong></span>
         </div>
 
         <div class="statusbar-right">
-          <span>शॉर्टकट: <kbd>Space</kbd> = हिंदी | <kbd>Backspace</kbd> = Undo | <kbd>Ctrl+M</kbd> = Toggle</span>
+          <span class="statusbar-shortcuts-hint">शॉर्टकट: <kbd>Space</kbd> = हिंदी | <kbd>Backspace</kbd> = Undo | <kbd>Ctrl+M</kbd> = Toggle</span>
           <span id="saveIndicator" class="save-indicator">✓ सहेजा गया</span>
         </div>
       </footer>
@@ -374,6 +392,8 @@
         <h4 style="margin-bottom: 8px; color: var(--accent-color);">५. मुख्य शॉर्टकट</h4>
         <ul style="padding-left: 20px; margin-bottom: 12px;">
           <li><kbd>Ctrl + M</kbd> : हिंदी / अंग्रेज़ी टाइपिंग चालू या बंद करें।</li>
+          <li><kbd>Ctrl + \</kbd> / <kbd>Alt + S</kbd> : साइडबार समेटें/खोलें (Toggle Sidebar)।</li>
+          <li><kbd>Esc</kbd> : ज़ेन मोड अथवा खुली विंडो बंद करें।</li>
           <li><kbd>Ctrl + B</kbd> / <kbd>Ctrl + I</kbd> : बोल्ड एवं इटैलिक।</li>
           <li><kbd>Shift + Enter</kbd> : कविता में बिना अंतराल की अगली पंक्ति।</li>
         </ul>

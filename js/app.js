@@ -67,7 +67,14 @@
     newBookTitleInput: document.getElementById('newBookTitleInput'),
     newBookAuthorInput: document.getElementById('newBookAuthorInput'),
     newBookGenreSelect: document.getElementById('newBookGenreSelect'),
-    createNewBookBtn: document.getElementById('createNewBookBtn')
+    createNewBookBtn: document.getElementById('createNewBookBtn'),
+
+    // Sidebar & Responsiveness
+    kalamSidebar: document.querySelector('.kalam-sidebar'),
+    toggleSidebarBtn: document.getElementById('toggleSidebarBtn'),
+    closeSidebarBtn: document.getElementById('closeSidebarBtn'),
+    floatingSidebarOpener: document.getElementById('floatingSidebarOpener'),
+    sidebarBackdrop: document.getElementById('sidebarBackdrop')
   };
 
   // Initialize Application
@@ -97,6 +104,9 @@
 
       // 7. Bind All Event Listeners
       bindEvents();
+
+      // 8. Initialize Sidebar State & Responsiveness
+      initSidebar();
 
       showToast('कलाम में आपका स्वागत है! लिखना प्रारंभ करें।');
     } catch (err) {
@@ -164,12 +174,33 @@
       showToast(enabled ? 'देवनागरी टाइपिंग सक्रिय (ON)' : 'अंग्रेज़ी टाइपिंग सक्रिय (OFF)');
     });
 
-    // Global Keyboard Shortcuts: Ctrl+M to toggle Hindi transliteration & Esc to exit Zen Mode / close Modals
+    // Sidebar Toggle Buttons & Backdrop
+    if (elements.toggleSidebarBtn) {
+      elements.toggleSidebarBtn.addEventListener('click', toggleSidebar);
+    }
+    if (elements.closeSidebarBtn) {
+      elements.closeSidebarBtn.addEventListener('click', () => setSidebarCollapsed(true, true));
+    }
+    if (elements.floatingSidebarOpener) {
+      elements.floatingSidebarOpener.addEventListener('click', () => setSidebarCollapsed(false, true));
+    }
+    if (elements.sidebarBackdrop) {
+      elements.sidebarBackdrop.addEventListener('click', () => setSidebarCollapsed(true, false));
+    }
+
+    // Global Keyboard Shortcuts: Ctrl+M to toggle translit, Ctrl+\ / Alt+S for sidebar, Esc for Zen/Modals
     window.addEventListener('keydown', (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'm') {
         e.preventDefault();
         elements.translitToggle.checked = !elements.translitToggle.checked;
         elements.translitToggle.dispatchEvent(new Event('change'));
+        return;
+      }
+
+      // Sidebar Toggle Shortcut: Ctrl+\ or Alt+S
+      if ((e.ctrlKey && e.key === '\\') || (e.altKey && (e.key === 's' || e.key === 'S' || e.code === 'KeyS'))) {
+        e.preventDefault();
+        toggleSidebar();
         return;
       }
 
@@ -187,7 +218,14 @@
           return;
         }
 
-        // 3. If in Zen Mode, exit Zen Mode!
+        // 3. If overlay drawer is open on narrow/windowed screen, close it!
+        if (window.innerWidth <= 950 && !isSidebarCollapsed()) {
+          e.preventDefault();
+          setSidebarCollapsed(true, false);
+          return;
+        }
+
+        // 4. If in Zen Mode, exit Zen Mode!
         if (document.body.classList.contains('zen-mode')) {
           e.preventDefault();
           toggleZenMode();
@@ -459,6 +497,10 @@
           renderChapterList();
           loadActiveChapter();
         }
+        // If on small / windowed screen, close drawer overlay so user sees writing canvas immediately
+        if (window.innerWidth <= 950) {
+          setSidebarCollapsed(true, false);
+        }
       });
 
       // Move Up
@@ -703,6 +745,64 @@
   function updateTranslitStatusPill(enabled) {
     elements.translitStatusPill.textContent = enabled ? 'हिंदी देवनागरी (Space to convert)' : 'English Script';
     elements.translitStatusPill.className = `status-pill ${enabled ? 'active' : 'inactive'}`;
+  }
+
+  // --- Sidebar Collapse & Windowed Responsiveness ---
+  function initSidebar() {
+    const isSmallScreen = window.innerWidth <= 920;
+    const savedState = localStorage.getItem('kalam_sidebar_collapsed');
+
+    // Auto-collapse if small window or previously collapsed by user
+    const shouldCollapse = savedState !== null ? (savedState === 'true') : isSmallScreen;
+    setSidebarCollapsed(shouldCollapse, false);
+
+    // Watch for window resize to auto-adapt when restored down on Windows
+    let lastWidth = window.innerWidth;
+    window.addEventListener('resize', () => {
+      const currentWidth = window.innerWidth;
+      // When crossing from wide screen to small window, auto-collapse sidebar
+      if (lastWidth > 920 && currentWidth <= 920) {
+        if (!isSidebarCollapsed()) {
+          setSidebarCollapsed(true, false);
+        }
+      }
+      lastWidth = currentWidth;
+    });
+  }
+
+  function isSidebarCollapsed() {
+    return elements.kalamSidebar ? elements.kalamSidebar.classList.contains('collapsed') : false;
+  }
+
+  function setSidebarCollapsed(collapsed, savePreference = true) {
+    if (!elements.kalamSidebar) return;
+
+    if (collapsed) {
+      elements.kalamSidebar.classList.add('collapsed');
+      document.body.classList.add('sidebar-is-collapsed');
+      if (elements.sidebarBackdrop) {
+        elements.sidebarBackdrop.classList.remove('active');
+      }
+    } else {
+      elements.kalamSidebar.classList.remove('collapsed');
+      document.body.classList.remove('sidebar-is-collapsed');
+      // If on narrow/windowed screen, show backdrop overlay
+      if (window.innerWidth <= 950 && elements.sidebarBackdrop) {
+        elements.sidebarBackdrop.classList.add('active');
+      }
+    }
+
+    if (savePreference) {
+      localStorage.setItem('kalam_sidebar_collapsed', collapsed ? 'true' : 'false');
+    }
+
+    if (window.lucide) {
+      window.lucide.createIcons();
+    }
+  }
+
+  function toggleSidebar() {
+    setSidebarCollapsed(!isSidebarCollapsed(), true);
   }
 
   function toggleZenMode() {
